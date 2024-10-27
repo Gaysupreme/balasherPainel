@@ -155,6 +155,13 @@
             const password = document.getElementById('newPassword').value;
             const timeValidity = document.getElementById('timeValidity').value;
 
+            // Verifica se o usuário já existe
+            const userExists = validUsers.some(user => user.username === username);
+            if (userExists) {
+                document.getElementById('creationResult').innerHTML = "Usuário já existe.";
+                return;
+            }
+
             if (validUsers.length < 2) {
                 validUsers.push({ username, password });
                 document.getElementById('creationResult').innerHTML = `Usuário ${username} criado com sucesso! Válido por: ${timeValidity}.`;
@@ -165,8 +172,18 @@
 
         function consultByCpf() {
             const cpf = document.getElementById('cpfInput').value;
+
+            // Adiciona validação simples para o CPF
+            if (!cpf || cpf.length < 11) {
+                document.getElementById('cpfResult').innerHTML = 'Por favor, insira um CPF válido.';
+                return;
+            }
+
             fetch(`https://diplomatasconsultasv1.squareweb.app/cpf.php?cpf=${cpf}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro na rede');
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('cpfResult').innerHTML = formatResult(data);
                 })
@@ -183,4 +200,4 @@
         }
     </script>
 </body>
-  </html>
+                </html>
