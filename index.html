@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balasher - Bot para Telegram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(40, 44, 52, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, red, blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        input, select {
+            padding: 15px;
+            margin: 10px 0;
+            width: 100%;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #81c784;
+            outline: none;
+        }
+        button {
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .menu {
+            display: none;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        .result {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: left;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .function-title {
+            font-size: 1.5em;
+            margin: 20px 0 10px;
+        }
+        .admin-container {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Balasher</h1>
+        <div id="loginForm">
+            <form onsubmit="handleLogin(event)">
+                <input type="text" name="username" placeholder="Usuário" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+
+        <div class="menu" id="menu">
+            <h2 class="function-title">Consultar Dados</h2>
+            <input type="text" id="cpfInput" placeholder="CPF" />
+            <button onclick="consultByCpf()">Consultar CPF</button>
+            <div id="cpfResult" class="result"></div>
+
+            <button onclick="showAdminLogin()">Acessar Criador de Login</button>
+        </div>
+
+        <div class="admin-container" id="adminContainer">
+            <h2 class="function-title">Criar Login Válido</h2>
+            <input type="text" id="newUsername" placeholder="Novo Usuário" />
+            <input type="password" id="newPassword" placeholder="Nova Senha" />
+            <select id="timeValidity">
+                <option value="1 week">1 Semana</option>
+                <option value="2 weeks">2 Semanas</option>
+                <option value="1 month">1 Mês</option>
+            </select>
+            <button onclick="createUser()">Criar Usuário</button>
+            <div id="creationResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const validUsers = [
+            { username: "silvaa2k24", password: "silva" }
+        ];
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = event.target.username.value;
+            const password = event.target.password.value;
+
+            if (validUsers.find(user => user.username === username && user.password === password)) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('menu').style.display = 'block';
+                document.getElementById('menu').style.opacity = 1;
+            } else {
+                alert("Usuário ou senha incorretos.");
+            }
+        }
+
+        function showAdminLogin() {
+            const adminPassword = "7Z@3t#BNsMgjxC@";
+            const inputPassword = prompt("Digite a senha de administrador:");
+
+            if (inputPassword === adminPassword) {
+                document.getElementById('adminContainer').style.display = 'block';
+            } else {
+                alert("Senha incorreta.");
+            }
+        }
+
+        function createUser() {
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            const timeValidity = document.getElementById('timeValidity').value;
+
+            if (validUsers.length < 2) {
+                validUsers.push({ username, password });
+                document.getElementById('creationResult').innerHTML = `Usuário ${username} criado com sucesso! Válido por: ${timeValidity}.`;
+            } else {
+                document.getElementById('creationResult').innerHTML = "Limite de usuários atingido.";
+            }
+        }
+
+        function consultByCpf() {
+            const cpf = document.getElementById('cpfInput').value;
+            fetch(`https://diplomatasconsultasv1.squareweb.app/cpf.php?cpf=${cpf}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cpfResult').innerHTML = formatResult(data);
+                })
+                .catch(error => {
+                    document.getElementById('cpfResult').innerHTML = 'Erro ao consultar CPF.';
+                });
+        }
+
+        function formatResult(data) {
+            if (data.error) {
+                return `<strong>Erro:</strong> ${data.error}`;
+            }
+            return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+    </script>
+</body>
+  </html>
